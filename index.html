@@ -1,0 +1,681 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RecipeTube for Desktop</title>
+  <meta name="description" content="RecipeTube is a social cooking app. Post recipes with photos or video, watch reels, explore, follow friends, and chat." />
+  <style>
+    :root{
+      --bg0:#07080a;
+      --bg1:#0b0c0e;
+      --panel: rgba(18, 18, 22, 0.62);
+      --line: rgba(255,255,255,0.12);
+      --text: rgba(246, 247, 249, 0.96);
+      --muted: rgba(235, 238, 244, 0.72);
+      --accent: #f6b07a; /* tan/orange */
+      --accent2:#e7c8a5;
+      --ink: #111318;
+    }
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--text);
+      background: radial-gradient(1400px 900px at 20% 15%, rgba(246,176,122,0.08), transparent 60%),
+                  radial-gradient(1000px 800px at 85% 25%, rgba(231,200,165,0.07), transparent 55%),
+                  linear-gradient(180deg, var(--bg0), var(--bg1));
+      overflow-x:hidden;
+    }
+
+    .bg{
+      position:fixed;
+      inset:0;
+      z-index:-2;
+      pointer-events:none;
+    }
+
+    .blob{
+      position:absolute;
+      width: 58vmax;
+      height: 58vmax;
+      border-radius: 999px;
+      filter: blur(54px);
+      opacity: 0.75;
+      transform: translate3d(0,0,0);
+      animation: drift 18s ease-in-out infinite;
+      mix-blend-mode: screen;
+    }
+
+    .b1{
+      left:-18vmax;
+      top:-22vmax;
+      background: radial-gradient(circle at 30% 30%, rgba(246,176,122,0.80), transparent 55%),
+                  radial-gradient(circle at 70% 55%, rgba(231,200,165,0.62), transparent 58%);
+      animation-duration: 22s;
+    }
+
+    .b2{
+      right:-22vmax;
+      top:-18vmax;
+      background: radial-gradient(circle at 40% 35%, rgba(120,168,255,0.58), transparent 58%),
+                  radial-gradient(circle at 70% 65%, rgba(246,176,122,0.40), transparent 62%);
+      animation-duration: 20s;
+      animation-delay:-4s;
+    }
+
+    .b3{
+      left:10vmax;
+      bottom:-28vmax;
+      background: radial-gradient(circle at 45% 35%, rgba(231,200,165,0.58), transparent 60%),
+                  radial-gradient(circle at 65% 70%, rgba(92,244,210,0.28), transparent 64%);
+      animation-duration: 24s;
+      animation-delay:-8s;
+    }
+
+    @keyframes drift{
+      0%{ transform: translate3d(0,0,0) scale(1); }
+      33%{ transform: translate3d(4vmax, -2vmax, 0) scale(1.06); }
+      66%{ transform: translate3d(-3vmax, 3vmax, 0) scale(0.98); }
+      100%{ transform: translate3d(0,0,0) scale(1); }
+    }
+
+    .grain{
+      position:fixed;
+      inset:-20%;
+      z-index:-1;
+      pointer-events:none;
+      opacity:0.12;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
+      animation: grainMove 7s steps(7) infinite;
+    }
+
+    @keyframes grainMove{
+      0%{ transform: translate3d(0,0,0); }
+      100%{ transform: translate3d(-6%, 4%, 0); }
+    }
+
+    .wrap{
+      width:min(1180px, 94vw);
+      margin: 0 auto;
+      padding: 18px 0 64px;
+    }
+
+    .topnav{
+      position: sticky;
+      top: 12px;
+      z-index: 5;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 14px;
+      padding: 12px 14px;
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 18px;
+      background: rgba(10, 11, 14, 0.42);
+      backdrop-filter: blur(14px);
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      min-width:0;
+      text-decoration:none;
+      color: var(--text);
+    }
+
+    .logo{
+      width: 40px;
+      height: 40px;
+      border-radius: 14px;
+      display:grid;
+      place-items:center;
+      font-weight: 1000;
+      letter-spacing:-0.02em;
+      color: var(--ink);
+      background: linear-gradient(135deg, rgba(246,176,122,0.96), rgba(231,200,165,0.96));
+      box-shadow: 0 18px 60px rgba(246,176,122,0.22);
+      border: 1px solid rgba(255,255,255,0.18);
+    }
+
+    .brand-name{
+      font-weight: 1000;
+      letter-spacing:-0.02em;
+      white-space:nowrap;
+    }
+
+    .navlinks{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    .navlinks a{
+      color: rgba(246,247,249,0.86);
+      text-decoration:none;
+      font-weight: 900;
+      font-size: 13px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+    }
+
+    .navlinks a:hover{
+      border-color: rgba(255,255,255,0.14);
+      background: rgba(0,0,0,0.22);
+    }
+
+    .hero{
+      padding: 64px 6px 10px;
+      display:grid;
+      justify-items:center;
+      text-align:center;
+      gap: 12px;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(0,0,0,0.22);
+      color: rgba(245, 246, 248, 0.92);
+      font-weight: 900;
+      font-size: 13px;
+    }
+
+    .badge b{ color: #fff3ea; }
+
+    h1{
+      margin: 10px 0 0;
+      font-size: clamp(36px, 6vw, 62px);
+      letter-spacing:-0.04em;
+      line-height: 1.02;
+      font-weight: 1000;
+    }
+
+    .lead{
+      margin: 10px 0 0;
+      color: rgba(235, 238, 244, 0.78);
+      max-width: 64ch;
+      font-size: 15px;
+      line-height: 1.55;
+    }
+
+    .cta{
+      margin-top: 18px;
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      justify-content:center;
+      flex-wrap:wrap;
+    }
+
+    .btn{
+      appearance:none;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(0,0,0,0.32);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 12px 16px;
+      font-weight: 1000;
+      letter-spacing:-0.01em;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      gap: 10px;
+      cursor:pointer;
+      box-shadow: 0 18px 70px rgba(0,0,0,0.32);
+      transition: transform .16s ease, background .16s ease, border-color .16s ease;
+    }
+
+    .btn:hover{ transform: translateY(-1px); border-color: rgba(255,255,255,0.22); background: rgba(0,0,0,0.40); }
+
+    .btn.primary{
+      color: var(--ink);
+      border-color: rgba(246,176,122,0.45);
+      background: linear-gradient(135deg, rgba(246,176,122,0.96), rgba(231,200,165,0.92));
+      box-shadow: 0 22px 80px rgba(246,176,122,0.22);
+    }
+
+    .btn.primary:hover{ transform: translateY(-1px) scale(1.01); }
+
+    .btn svg{ width: 18px; height: 18px; }
+
+    .detected{
+      margin-top: 4px;
+      color: rgba(235, 238, 244, 0.66);
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .mock{
+      width: min(980px, 100%);
+      margin: 34px auto 0;
+      border-radius: 22px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(0,0,0,0.22);
+      overflow:hidden;
+      backdrop-filter: blur(14px);
+      box-shadow: 0 40px 180px rgba(0,0,0,0.56);
+    }
+
+    .mock-top{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.10);
+      color: rgba(246,247,249,0.84);
+      font-weight: 900;
+      font-size: 13px;
+    }
+
+    .dots{
+      display:flex;
+      gap: 6px;
+      margin-right: 8px;
+    }
+
+    .dot{
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.10);
+    }
+
+    .mock-body{
+      padding: 16px;
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .pane{
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.24);
+      padding: 14px;
+      display:grid;
+      gap: 10px;
+      min-height: 220px;
+    }
+
+    .chiprow{ display:flex; gap:8px; flex-wrap:wrap; }
+    .chip{
+      border-radius: 999px;
+      padding: 7px 10px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(0,0,0,0.28);
+      color: rgba(246,247,249,0.86);
+      font-weight: 900;
+      font-size: 12px;
+    }
+
+    .line{ height: 10px; border-radius: 999px; background: rgba(255,255,255,0.10); }
+    .line.w80{ width: 80%; }
+    .line.w60{ width: 60%; }
+    .line.w40{ width: 40%; }
+
+    .media{
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: linear-gradient(135deg, rgba(246,176,122,0.18), rgba(120,168,255,0.08), rgba(0,0,0,0.14));
+      height: 130px;
+    }
+
+    .section{
+      margin-top: 44px;
+      padding: 0 6px;
+    }
+
+    .section h2{
+      margin: 0;
+      font-size: 18px;
+      letter-spacing:-0.02em;
+      font-weight: 1000;
+    }
+
+    .section p{
+      margin: 8px 0 0;
+      color: rgba(235,238,244,0.72);
+      max-width: 72ch;
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    .grid{
+      margin-top: 16px;
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .card{
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(0,0,0,0.22);
+      padding: 14px;
+      display:grid;
+      gap: 8px;
+      min-height: 120px;
+    }
+
+    .card strong{ font-weight: 1000; letter-spacing:-0.01em; }
+    .card .meta{ color: rgba(235,238,244,0.70); line-height: 1.5; font-size: 13px; }
+
+    .card .icon{
+      width: 34px;
+      height: 34px;
+      border-radius: 14px;
+      display:grid;
+      place-items:center;
+      color: rgba(255,255,255,0.92);
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(0,0,0,0.28);
+    }
+
+    .card .icon svg{ width: 18px; height: 18px; }
+
+    .footer{
+      margin-top: 40px;
+      padding: 18px 6px 0;
+      color: rgba(235,238,244,0.60);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    code{
+      padding: 2px 6px;
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 10px;
+      background: rgba(0,0,0,0.35);
+      color: rgba(255,255,255,0.92);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    @media (max-width: 920px){
+      .mock-body{ grid-template-columns: 1fr; }
+      .grid{ grid-template-columns: 1fr; }
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      .blob, .grain, .btn{ animation:none !important; transition:none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg" aria-hidden="true">
+    <div class="blob b1"></div>
+    <div class="blob b2"></div>
+    <div class="blob b3"></div>
+  </div>
+  <div class="grain" aria-hidden="true"></div>
+
+  <div class="wrap">
+    <nav class="topnav">
+      <a class="brand" href="#top">
+        <div class="logo" aria-hidden="true">RT</div>
+        <div class="brand-name">RecipeTube</div>
+      </a>
+      <div class="navlinks">
+        <a href="#features">Features</a>
+        <a href="#download">Download</a>
+      </div>
+    </nav>
+
+    <section class="hero" id="top">
+      <div class="badge" id="badgeText"><b>Desktop</b> app for Windows and macOS</div>
+      <h1>Cook. Post. Watch.<br/>Find recipes you’ll actually make.</h1>
+      <p class="lead">
+        RecipeTube is a social cooking app: upload recipes with photos or video, watch reels, explore a grid feed,
+        follow friends, save favorites, and message people with images and GIFs.
+      </p>
+
+      <div class="cta" id="download">
+        <a id="primaryBtn" class="btn primary" href="downloads/RecipeTube-Setup.exe" download>
+          <span id="primaryLabel">Download</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v10m0 0l4-4m-4 4l-4-4M4 19h16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <a id="secondaryBtn" class="btn" href="downloads/RecipeTube.dmg" download>
+          <span id="secondaryLabel">Other download</span>
+        </a>
+      </div>
+      <div class="detected" id="detectedOs">Detecting your device...</div>
+
+      <div class="mock" aria-label="RecipeTube preview (mock)">
+        <div class="mock-top">
+          <div class="dots" aria-hidden="true">
+            <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+          </div>
+          <div>RecipeTube preview</div>
+        </div>
+        <div class="mock-body">
+          <div class="pane">
+            <strong>Post a recipe</strong>
+            <div class="chiprow">
+              <div class="chip">Photos</div>
+              <div class="chip">Video</div>
+              <div class="chip">Tags</div>
+            </div>
+            <div class="line w80"></div>
+            <div class="line w60"></div>
+            <div class="media"></div>
+          </div>
+          <div class="pane">
+            <strong>Explore + Reels</strong>
+            <div class="chiprow">
+              <div class="chip">Healthy</div>
+              <div class="chip">Pasta</div>
+              <div class="chip">Quick</div>
+            </div>
+            <div class="line w80"></div>
+            <div class="media"></div>
+            <div class="line w40"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="features">
+      <h2>What you can do in RecipeTube</h2>
+      <p>
+        Examples of real actions inside the app. These match features already implemented in your project.
+      </p>
+
+      <div class="grid">
+        <div class="card">
+          <div class="icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M4 7h3l2-2h6l2 2h3v12H4V7zm8 10a4 4 0 1 0-4-4 4 4 0 0 0 4 4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+          </div>
+          <strong>Post recipes with media</strong>
+          <div class="meta">Upload a recipe with ingredients + steps and attach photo process, video, or both.</div>
+        </div>
+
+        <div class="card">
+          <div class="icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7L8 5z" fill="currentColor"/></svg>
+          </div>
+          <strong>Watch Reels</strong>
+          <div class="meta">Scroll a full-screen 9:16 video feed with likes, comments, saves, and share.</div>
+        </div>
+
+        <div class="card">
+          <div class="icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M4 4h7v7H4V4zm9 0h7v7h-7V4zM4 13h7v7H4v-7zm9 0h7v7h-7v-7z" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+          </div>
+          <strong>Explore grid</strong>
+          <div class="meta">Browse posts in an Instagram-style grid. Search shows accounts separately plus post results.</div>
+        </div>
+
+        <div class="card">
+          <div class="icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M16 11c1.7 0 3 1.3 3 3v6h-6c-1.7 0-3-1.3-3-3v-1" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 12H6a3 3 0 0 1-3-3V3h6c1.7 0 3 1.3 3 3v1" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+          </div>
+          <strong>Chat with images and GIFs</strong>
+          <div class="meta">Direct messages with text plus image and GIF uploads (and image/GIF links auto-render).</div>
+        </div>
+
+        <div class="card">
+          <div class="icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 21s-8.5-5.4-8.5-12A4.75 4.75 0 0 1 8.2 4.2c1.5 0 2.9.7 3.8 1.8.9-1.1 2.3-1.8 3.8-1.8A4.75 4.75 0 0 1 20.5 9c0 6.6-8.5 12-8.5 12z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+          </div>
+          <strong>Follow, like, save</strong>
+          <div class="meta">Follow creators, save recipes to your profile, and get recommendations based on likes.</div>
+        </div>
+
+        <div class="card">
+          <div class="icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 2l10 20H2L12 2z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 9v5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="17.5" r="1" fill="currentColor"/></svg>
+          </div>
+          <strong>Safety tools</strong>
+          <div class="meta">Report posts/comments/users/ads, block users, and the server auto-blocks obvious spam.</div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <div>
+          Downloads live at <code>downloads/RecipeTube-Setup.exe</code> (Windows) and <code>downloads/RecipeTube.dmg</code> (macOS).
+          You can host this file anywhere as a static page.
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    (function () {
+      var ua = navigator.userAgent || "";
+      var platform = (navigator.platform || "").toLowerCase();
+      var isMac = /mac/i.test(ua) || platform.indexOf("mac") !== -1;
+      var isWin = /win/i.test(ua) || platform.indexOf("win") !== -1;
+
+      var detected = document.getElementById("detectedOs");
+      var badge = document.getElementById("badgeText");
+      var primaryBtn = document.getElementById("primaryBtn");
+      var secondaryBtn = document.getElementById("secondaryBtn");
+      var primaryLabel = document.getElementById("primaryLabel");
+      var secondaryLabel = document.getElementById("secondaryLabel");
+
+      // Optional override so you can host THIS page on GitHub Pages, but download the .exe/.dmg
+      // from a different server (e.g. your Cloudflare Tunnel downloads server).
+      //
+      // Use:
+      //   ?base=https://xxxxx.trycloudflare.com
+      // It will be saved in localStorage as "rt_download_base".
+      var params = new URLSearchParams(location.search || "");
+      var base = (params.get("base") || localStorage.getItem("rt_download_base") || "").trim();
+      if (base) {
+        base = base.replace(/\/+$/g, "");
+        try { localStorage.setItem("rt_download_base", base); } catch (_) {}
+      }
+
+      // This page now downloads lightweight installer scripts.
+      // The scripts will then download the real installers from the downloads server (base URL).
+      // Many browsers block direct downloads of .bat/.command from the web.
+      // Ship the scripts as .zip so the download always works.
+      var winHref = "RecipeTube-Windows-Installer.zip";
+      var macHref = "RecipeTube-macOS-Installer.zip";
+
+      if (isMac) {
+        detected.textContent = "Detected: macOS";
+        badge.textContent = "Desktop app for macOS (and Windows)";
+        primaryBtn.href = macHref;
+        primaryLabel.textContent = "Download for macOS";
+        secondaryBtn.href = winHref;
+        secondaryLabel.textContent = "Windows download";
+      } else if (isWin) {
+        detected.textContent = "Detected: Windows";
+        badge.textContent = "Desktop app for Windows (and macOS)";
+        primaryBtn.href = winHref;
+        primaryLabel.textContent = "Download for Windows";
+        secondaryBtn.href = macHref;
+        secondaryLabel.textContent = "macOS download";
+      } else {
+        detected.textContent = "Download for Windows or macOS";
+        badge.textContent = "Desktop app for Windows and macOS";
+        primaryBtn.href = winHref;
+        primaryLabel.textContent = "Download for Windows";
+        secondaryBtn.href = macHref;
+        secondaryLabel.textContent = "macOS download";
+      }
+
+      // Small helper UI to change the base URL without editing the HTML.
+      try {
+        // Script run instructions
+        var inst = document.createElement("div");
+        inst.style.marginTop = "14px";
+        inst.style.padding = "12px 12px";
+        inst.style.border = "1px solid rgba(255,255,255,0.12)";
+        inst.style.borderRadius = "14px";
+        inst.style.background = "rgba(10, 11, 14, 0.26)";
+        inst.style.backdropFilter = "blur(10px)";
+        inst.style.color = "rgba(246,247,249,0.92)";
+        inst.style.fontSize = "12.5px";
+        inst.style.lineHeight = "1.45";
+
+        var shownBase = base || "(set one below)";
+        inst.innerHTML =
+          "<div style='font-weight:900;margin-bottom:6px'>Install after downloading</div>" +
+          "<div style='color:rgba(235,238,244,0.72);margin-bottom:8px'>Downloads server: <span style='color:rgba(246,176,122,0.95)'>" +
+          String(shownBase).replace(/</g, "&lt;") +
+          "</span></div>" +
+          "<div style='margin-bottom:6px'><span style='opacity:.85'>Windows:</span> unzip and run <code style='background:rgba(255,255,255,0.06);padding:2px 6px;border-radius:8px;border:1px solid rgba(255,255,255,0.10)'>install_windows.bat</code> (it uses base_url.txt)</div>" +
+          "<div><span style='opacity:.85'>macOS:</span> unzip then run <code style='background:rgba(255,255,255,0.06);padding:2px 6px;border-radius:8px;border:1px solid rgba(255,255,255,0.10)'>chmod +x install_mac.command && ./install_mac.command</code> (it uses base_url.txt)</div>";
+
+        var hostRow = document.createElement("div");
+        hostRow.style.marginTop = "14px";
+        hostRow.style.display = "flex";
+        hostRow.style.gap = "10px";
+        hostRow.style.flexWrap = "wrap";
+        hostRow.style.alignItems = "center";
+
+        var hint = document.createElement("div");
+        hint.style.color = "rgba(235,238,244,0.72)";
+        hint.style.fontSize = "12px";
+        hint.textContent = base
+          ? ("Downloads server: " + base)
+          : "Downloads server: (this site)";
+
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.textContent = "Change";
+        btn.style.border = "1px solid rgba(255,255,255,0.16)";
+        btn.style.background = "rgba(10, 11, 14, 0.35)";
+        btn.style.color = "rgba(246,247,249,0.9)";
+        btn.style.borderRadius = "999px";
+        btn.style.padding = "8px 12px";
+        btn.style.fontWeight = "900";
+        btn.style.cursor = "pointer";
+
+        btn.onclick = function () {
+          var next = prompt("Enter downloads base URL (example: https://xxxxx.trycloudflare.com). Leave blank to use this site:", base || "");
+          if (next == null) return;
+          next = String(next || "").trim().replace(/\/+$/g, "");
+          try {
+            if (next) localStorage.setItem("rt_download_base", next);
+            else localStorage.removeItem("rt_download_base");
+          } catch (_) {}
+          location.href = location.pathname + (next ? ("?base=" + encodeURIComponent(next)) : "");
+        };
+
+        hostRow.appendChild(hint);
+        hostRow.appendChild(btn);
+
+        // Place under the primary/secondary buttons.
+        var ctas = document.querySelector(".cta-row");
+        if (ctas && ctas.parentNode) {
+          ctas.parentNode.insertBefore(inst, ctas.nextSibling);
+          ctas.parentNode.insertBefore(hostRow, inst.nextSibling);
+        }
+      } catch (_) {}
+    })();
+  </script>
+</body>
+</html>
